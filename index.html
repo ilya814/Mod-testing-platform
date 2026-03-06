@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ModForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#07090f;--surface:#111820;--border:#1a2535;--border2:#243040;--accent:#00e5ff;--green:#2dde6e;--red:#ff5c5c;--purple:#b06fff;--text:#c8d8e8;--dim:#607080;--muted:#3a4858;--mono:'Space Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,229,255,.018) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,229,255,.018) 40px);pointer-events:none;z-index:0}
+header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:rgba(7,9,15,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(16px)}
+.logo{font-family:var(--display);font-size:22px;color:#fff}.logo span{color:var(--accent)}
+.status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* FIRST RUN MODAL */
+.modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal.hide{display:none}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:32px;width:100%;max-width:440px}
+.modal-box h2{font-family:var(--display);font-size:24px;margin-bottom:8px}
+.modal-box p{font-size:13px;color:var(--dim);margin-bottom:20px;line-height:1.6}
+.modal-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:12px;padding:10px 12px;outline:none;margin-bottom:8px}
+.modal-box input:focus{border-color:var(--accent)}
+.modal-hint{font-size:11px;color:var(--muted);margin-bottom:16px;font-family:var(--mono)}
+.modal-hint a{color:var(--accent);text-decoration:none}
+.btn-modal{width:100%;background:var(--accent);color:var(--bg);border:none;font-family:var(--display);font-size:20px;font-weight:700;padding:12px;border-radius:3px;cursor:pointer;transition:all .2s}
+.btn-modal:hover{background:#fff}
+main{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:40px 20px 60px}
+.hero{margin-bottom:32px}.hero-tag{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:12px}
+.hero h1{font-family:var(--display);font-size:clamp(44px,8vw,80px);line-height:.92;margin-bottom:14px}
+.hero h1 em{font-style:normal;-webkit-text-stroke:1.5px var(--accent);color:transparent}
+.hero p{font-size:14px;color:var(--dim);line-height:1.7}
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.mode-tab{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s}
+.mode-tab.on{border-color:var(--accent);background:rgba(0,229,255,.05)}
+.mode-tab-icon{font-size:24px;margin-bottom:6px}.mode-tab-name{font-family:var(--display);font-size:15px}
+.mode-tab-desc{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:4px}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:22px;margin-bottom:12px}
+.card.done{border-color:rgba(45,222,110,.3)}
+.card-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.card-num{font-family:var(--display);font-size:26px;color:var(--accent);min-width:32px;line-height:1}
+.card-title{font-family:var(--mono);font-size:13px;font-weight:700;flex:1}
+.card-status{font-family:var(--mono);font-size:10px;color:var(--muted)}.card.done .card-status{color:var(--green)}
+.drop{border:2px dashed var(--border2);border-radius:3px;padding:28px;text-align:center;cursor:pointer;transition:all .2s}
+.drop:hover,.drop.drag{border-color:var(--accent);background:rgba(0,229,255,.04)}
+.drop input{display:none}.drop-icon{font-size:28px;margin-bottom:8px}
+.drop p{font-size:13px;color:var(--dim);margin-bottom:10px}.drop-note{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.btn-pick{display:inline-block;font-family:var(--mono);font-size:11px;border:1px solid var(--accent);color:var(--accent);background:none;padding:7px 16px;cursor:pointer;border-radius:2px;margin-bottom:6px;transition:all .15s}
+.btn-pick:hover{background:var(--accent);color:var(--bg)}
+select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:12px;padding:10px 12px;outline:none;appearance:none}
+select:focus{border-color:var(--accent)}
+label.lbl{display:block;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.launch-bar{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 22px;display:flex;align-items:center;gap:16px;margin-top:4px}
+.launch-info{flex:1;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.btn-launch{background:var(--accent);color:var(--bg);border:none;cursor:pointer;font-family:var(--display);font-size:20px;font-weight:700;padding:12px 26px;border-radius:3px;transition:all .2s;white-space:nowrap}
+.btn-launch:disabled{opacity:.25;cursor:not-allowed}.btn-launch:not(:disabled):hover{background:#fff;transform:translateY(-1px)}
+.btn-launch.purple{background:var(--purple)}
+.progress{margin-top:12px;display:none}.progress.show{display:block}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .5s}.prog-fill.purple{background:var(--purple)}
+.prog-label{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.result{display:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:20px 22px}
+.result.show{display:block}.result.ok{border-color:rgba(45,222,110,.4)}.result.fail{border-color:rgba(255,92,92,.4)}
+.result-title{font-family:var(--display);font-size:28px;margin-bottom:6px}
+.result.ok .result-title{color:var(--green)}.result.fail .result-title{color:var(--red)}
+.result-log{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:10px;background:var(--bg);padding:12px;border-radius:3px;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+#streamBox{display:none;margin-top:12px;background:#000;border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+#streamBox.show{display:block}#streamBox iframe{width:100%;height:500px;border:none;display:block}
+.stream-waiting{padding:60px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:13px}
+.stream-waiting .big{font-size:40px;margin-bottom:12px;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stream-top{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.stream-title{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.btn-fs{font-family:var(--mono);font-size:10px;background:none;border:1px solid var(--border);color:var(--dim);padding:5px 10px;cursor:pointer;border-radius:2px}
+.btn-fs:hover{border-color:var(--accent);color:var(--accent)}
+footer{border-top:1px solid var(--border);padding:24px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted)}
+@media(max-width:600px){.mode-tabs{grid-template-columns:1fr}.launch-bar{flex-direction:column}.btn-launch{width:100%}}
+</style>
+</head>
+<body>
+
+<!-- First-run token modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2>Welcome to ModForge</h2>
+    <p>Enter your GitHub token once. It stays in your browser only — never uploaded anywhere.</p>
+    <input type="password" id="modalToken" placeholder="your-token-here"/>
+    <div class="modal-hint">Needs repo + workflow scopes &nbsp;·&nbsp; <a href="https://github.com/settings/tokens/new?scopes=repo,workflow" target="_blank">Create one here</a></div>
+    <button class="btn-modal" onclick="saveToken()">SAVE AND CONTINUE</button>
+  </div>
+</div>
+
+<header><div class="logo">MOD<span>FORGE</span></div><div class="status"><div class="dot"></div>Ready</div></header>
+<main>
+<div class="hero"><div class="hero-tag">// CLOUD MOD TESTING AND PLAYING</div><h1>MODS.<br>GAMES.<br><em>FREE.</em></h1><p>Test any mod or play Minecraft in your browser. No downloads. No setup.</p></div>
+<div class="mode-tabs">
+  <div class="mode-tab on" onclick="setMode('test',this)"><div class="mode-tab-icon">🧪</div><div class="mode-tab-name">TEST MOD</div><div class="mode-tab-desc">Check if mod works</div></div>
+  <div class="mode-tab" onclick="setMode('play',this)"><div class="mode-tab-icon">⛏️</div><div class="mode-tab-name">PLAY</div><div class="mode-tab-desc">Launch Minecraft</div></div>
+  <div class="mode-tab" onclick="setMode('playwmod',this)"><div class="mode-tab-icon">🧩</div><div class="mode-tab-name">PLAY + MOD</div><div class="mode-tab-desc">Play with your mod</div></div>
+</div>
+<div class="panel on" id="panel-test">
+  <div class="card" id="tc1"><div class="card-head"><div class="card-num">01</div><div class="card-title">Upload Your Mod</div><div class="card-status" id="ts1">No file</div></div>
+  <div class="drop" onclick="document.getElementById('tFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event,'tFile')">
+    <div class="drop-icon">🧩</div><p id="tLabel">Drop your mod file here</p><label class="btn-pick">Browse File</label><div class="drop-note">.jar .zip .tmod .dll</div>
+  </div><input type="file" id="tFile" accept=".jar,.zip,.tmod,.dll" onchange="onTF()"/></div>
+  <div class="launch-bar"><div class="launch-info" id="tInfo">Upload a mod to test.</div><button class="btn-launch" id="tBtn" disabled onclick="launchTest()">TEST MOD</button></div>
+  <div class="progress" id="tProg"><div class="prog-bar"><div class="prog-fill" id="tFill"></div></div><div class="prog-label" id="tLbl"></div></div>
+  <div class="result" id="tRes"><div class="result-title" id="tRT"></div><div id="tRM"></div><div class="result-log" id="tRL" style="display:none"></div></div>
+</div>
+<div class="panel" id="panel-play">
+  <div class="card"><div class="card-head"><div class="card-num">01</div><div class="card-title">Pick Version</div></div>
+  <label class="lbl">Minecraft Version</label>
+  <select id="pV"><option value="1.21.1">1.21.1</option><option value="1.21">1.21</option><option value="1.20.4">1.20.4</option><option value="1.20.1">1.20.1</option><option value="1.19.4">1.19.4</option><option value="1.19.2">1.19.2</option><option value="1.18.2">1.18.2</option><option value="1.16.5">1.16.5</option></select></div>
+  <div class="launch-bar"><div class="launch-info">Launches in browser. Takes about 3 min.</div><button class="btn-launch purple" onclick="launchPlay(false)">PLAY</button></div>
+  <div class="progress" id="pProg"><div class="prog-bar"><div class="prog-fill purple" id="pFill"></div></div><div class="prog-label" id="pLbl"></div></div>
+  <div id="streamBox"><div class="stream-top"><div class="stream-title" id="sTitle">Minecraft</div><button class="btn-fs" onclick="fullscr()">Fullscreen</button></div>
+  <div class="stream-waiting" id="sWait"><div class="big">⚙️</div><div>Starting Minecraft...</div><div style="font-size:10px;margin-top:6px;color:var(--muted)">2-4 minutes</div></div>
+  <iframe id="sFrame" style="display:none" allowfullscreen></iframe></div>
+</div>
+<div class="panel" id="panel-playwmod">
+  <div class="card" id="pwC"><div class="card-head"><div class="card-num">01</div><div class="card-title">Upload Mod</div><div class="card-status" id="pwS">No file</div></div>
+  <div class="drop" onclick="document.getElementById('pwFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="onDrop(event,'pwFile')">
+    <div class="drop-icon">🧩</div><p id="pwL">Drop your .jar here</p><label class="btn-pick">Browse File</label><div class="drop-note">.jar only</div>
+  </div><input type="file" id="pwFile" accept=".jar" onchange="onPWF()"/></div>
+  <div class="card"><div class="card-head"><div class="card-num">02</div><div class="card-title">Pick Version</div></div>
+  <label class="lbl">Minecraft Version</label>
+  <select id="pwV"><option value="1.21.1">1.21.1</option><option value="1.21">1.21</option><option value="1.20.4">1.20.4</option><option value="1.20.1">1.20.1</option><option value="1.19.4">1.19.4</option><option value="1.19.2">1.19.2</option><option value="1.18.2">1.18.2</option><option value="1.16.5">1.16.5</option></select></div>
+  <div class="launch-bar"><div class="launch-info" id="pwI">Upload a mod first.</div><button class="btn-launch purple" id="pwBtn" disabled onclick="launchPlay(true)">PLAY + MOD</button></div>
+  <div class="progress" id="pwProg"><div class="prog-bar"><div class="prog-fill purple" id="pwFill"></div></div><div class="prog-label" id="pwLbl"></div></div>
+</div>
+</main>
+<footer>ModForge - free cloud mod testing</footer>
+<script>
+const O="ilya814",R="Mod-testing-platform";
+let T=localStorage.getItem('mf_token')||'';
+let tF=null,pwF=null;
+
+// Show token modal on first visit
+if(!T) document.getElementById('modal').classList.remove('hide');
+else document.getElementById('modal').classList.add('hide');
+
+function saveToken(){
+  const t=document.getElementById('modalToken').value.trim();
+  if(!t){alert('Enter your token.');return;}
+  T=t;localStorage.setItem('mf_token',t);
+  document.getElementById('modal').classList.add('hide');
+}
+function setMode(m,el){document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));el.classList.add('on');document.getElementById('panel-'+m).classList.add('on')}
+function onTF(){const f=document.getElementById('tFile').files[0];if(!f)return;tF=f;document.getElementById('tLabel').textContent='✓ '+f.name;document.getElementById('ts1').textContent='✓ '+f.name;document.getElementById('tc1').classList.add('done');document.getElementById('tInfo').textContent=f.name;document.getElementById('tBtn').disabled=false}
+function onPWF(){const f=document.getElementById('pwFile').files[0];if(!f)return;pwF=f;document.getElementById('pwL').textContent='✓ '+f.name;document.getElementById('pwS').textContent='✓ '+f.name;document.getElementById('pwC').classList.add('done');document.getElementById('pwI').textContent=f.name;document.getElementById('pwBtn').disabled=false}
+function onDrop(e,id){e.preventDefault();e.currentTarget.classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;document.getElementById(id).files=e.dataTransfer.files;id==='tFile'?onTF():onPWF()}
+async function launchTest(){document.getElementById('tBtn').disabled=true;document.getElementById('tRes').className='result';sp('t',5,'Uploading mod...');let mu;try{mu=await up(tF);sp('t',25,'Starting...')}catch(e){return sR(false,'Upload failed: '+e.message)}const sid='test-'+Date.now();const r=await dis('test-mod',{mod_url:mu,session_id:sid});if(!r.ok)return sR(false,'Could not start');sp('t',40,'Installing...');await s(10000);sp('t',60,'Testing...');for(let i=0;i<40;i++){await s(5000);try{const cs=await gh('issues/1/comments?per_page=30');for(const c of[...cs].reverse()){if(c.body&&c.body.includes('SESSION='+sid)){if(c.body.includes('RESULT=pass'))return sR(true,'Mod loaded!');if(c.body.includes('RESULT=fail'))return sR(false,'Mod crashed.',c.body.split('LOG=')[1]||'')}}}catch{}sp('t',60+Math.min(i*1.5,35),i<5?'Launching...':'Almost done...')}sR(false,'Timed out.')}
+function sR(ok,msg,log){document.getElementById('tProg').classList.remove('show');document.getElementById('tBtn').disabled=false;const el=document.getElementById('tRes');el.className='result show '+(ok?'ok':'fail');document.getElementById('tRT').textContent=ok?'✅ MOD WORKS':'❌ MOD CRASHED';document.getElementById('tRM').textContent=msg;if(log){document.getElementById('tRL').textContent=log;document.getElementById('tRL').style.display='block'}}
+async function launchPlay(wm){const ver=wm?document.getElementById('pwV').value:document.getElementById('pV').value;const px=wm?'pw':'p';const sid='play-'+Date.now();sp(px,10,'Starting...');document.getElementById('streamBox').classList.remove('show');let mu='';if(wm&&pwF){sp(px,15,'Uploading mod...');try{mu=await up(pwF)}catch(e){return alert('Upload failed: '+e.message)}}sp(px,25,'Launching...');const r=await dis('play-minecraft',{version:ver,mod_url:mu,session_id:sid});if(!r.ok)return alert('Could not launch');sp(px,40,'Installing Minecraft...');await s(10000);sp(px,60,'Starting...');for(let i=0;i<60;i++){await s(5000);try{const cs=await gh('issues/1/comments?per_page=30');for(const c of[...cs].reverse()){if(c.body&&c.body.includes('SESSION='+sid)){const m=c.body.match(/URL=(https?://S+)/);if(m){sS(m[1],ver);return}}}}catch{}sp(px,60+Math.min(i*1.2,35),i<5?'Installing...':i<12?'Starting...':'Almost ready...')}alert('Timed out.')}
+function sS(url,ver){['pProg','pwProg'].forEach(id=>{try{document.getElementById(id).classList.remove('show')}catch{}});document.getElementById('sTitle').textContent='Minecraft '+ver;const b=document.getElementById('streamBox');b.classList.add('show');b.scrollIntoView({behavior:'smooth'});document.getElementById('sWait').style.display='block';document.getElementById('sFrame').style.display='none';const f=document.getElementById('sFrame');f.src=url+'/vnc.html?autoconnect=1&resize=scale&password=';f.onload=()=>{document.getElementById('sWait').style.display='none';f.style.display='block'}}
+function fullscr(){const f=document.getElementById('sFrame');if(f.requestFullscreen)f.requestFullscreen()}
+async function up(file){const h={'Authorization':'token '+T,'Accept':'application/vnd.github+json','Content-Type':'application/json'};const rl=await(await fetch('https://api.github.com/repos/'+O+'/'+R+'/releases',{headers:h})).json();const ex=Array.isArray(rl)&&rl.find(r=>r.tag_name==='mod-uploads');let rid=ex?ex.id:(await(await fetch('https://api.github.com/repos/'+O+'/'+R+'/releases',{method:'POST',headers:h,body:JSON.stringify({tag_name:'mod-uploads',name:'Mod Uploads',body:'Auto',draft:false,prerelease:false})})).json()).id;const fn=Date.now()+'-'+file.name;const a=await(await fetch('https://uploads.github.com/repos/'+O+'/'+R+'/releases/'+rid+'/assets?name='+encodeURIComponent(fn),{method:'POST',headers:{'Authorization':'token '+T,'Content-Type':'application/octet-stream'},body:file})).json();if(!a.browser_download_url)throw new Error('Failed');return a.browser_download_url}
+async function dis(type,p){return fetch('https://api.github.com/repos/'+O+'/'+R+'/dispatches',{method:'POST',headers:{'Authorization':'token '+T,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({event_type:type,client_payload:p})})}
+async function gh(path){return(await fetch('https://api.github.com/repos/'+O+'/'+R+'/'+path,{headers:{'Authorization':'token '+T,'Accept':'application/vnd.github+json'}})).json()}
+function sp(px,pct,lbl){document.getElementById(px+'Prog').classList.add('show');document.getElementById(px+'Fill').style.width=pct+'%';document.getElementById(px+'Lbl').textContent=lbl}
+const s=ms=>new Promise(r=>setTimeout(r,ms));
+</script>
+</body>
+</html>
