@@ -39,9 +39,9 @@ jobs:
         run: |
           MOD_URL="${{ github.event.client_payload.mod_url }}"
           if [ -n "$MOD_URL" ] && [ "$MOD_URL" != "null" ]; then
-            wget -q "$MOD_URL" -O /tmp/mod.jar && echo "Mod downloaded"
+            wget -q "$MOD_URL" -O /tmp/mod.jar
           fi
-      - name: Detect and install Minecraft
+      - name: Install Minecraft
         run: |
           MC="$HOME/.minecraft"
           mkdir -p "$MC/mods" /tmp/meta
@@ -110,22 +110,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const action = context.payload.action;
-            const sid = context.payload.client_payload.session_id;
-            const url = process.env.STREAM_URL || '';
-            const pass = process.env.PASS === 'true';
-            const fs = require('fs');
-            const logTxt = fs.existsSync('/tmp/game.log') ? fs.readFileSync('/tmp/game.log','utf8') : '';
-            const errors = logTxt.split('\n').filter(l=>/Exception|FATAL/.test(l)).slice(0,10).join('\n');
-            const body = action === 'test-mod'
-              ? (pass ? `MODFORGE SESSION=${sid} RESULT=pass` : `MODFORGE SESSION=${sid} RESULT=fail LOG=${errors}`)
-              : `MODFORGE SESSION=${sid} URL=${url}`;
-            try {
-              await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:1,body});
-            } catch {
-              await github.rest.issues.create({owner:context.repo.owner,repo:context.repo.repo,title:'ModForge Sessions',body:'Auto-created.'});
-              await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:1,body});
-            }
+            const action=context.payload.action;
+            const sid=context.payload.client_payload.session_id;
+            const url=process.env.STREAM_URL||'';
+            const pass=process.env.PASS==='true';
+            const fs=require('fs');
+            const logTxt=fs.existsSync('/tmp/game.log')?fs.readFileSync('/tmp/game.log','utf8'):'';
+            const errors=logTxt.split('\n').filter(l=>/Exception|FATAL/.test(l)).slice(0,10).join('\n');
+            const body=action==='test-mod'
+              ?(pass?`MODFORGE SESSION=${sid} RESULT=pass`:`MODFORGE SESSION=${sid} RESULT=fail LOG=${errors}`)
+              :`MODFORGE SESSION=${sid} URL=${url}`;
+            try{await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:1,body});}
+            catch{await github.rest.issues.create({owner:context.repo.owner,repo:context.repo.repo,title:'ModForge Sessions',body:'Auto-created.'});await github.rest.issues.createComment({owner:context.repo.owner,repo:context.repo.repo,issue_number:1,body});}
       - name: Keep alive for play mode
         if: github.event.action == 'play-minecraft'
         run: tail -f /tmp/game.log
