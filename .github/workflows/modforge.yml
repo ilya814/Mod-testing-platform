@@ -33,7 +33,7 @@ jobs:
           for i in $(seq 1 30); do
             sleep 2
             URL=$(grep -oP 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf.log 2>/dev/null | head -1)
-            if [ -n "$URL" ]; then echo "STREAM_URL=$URL" >> $GITHUB_ENV; echo "Tunnel ready: $URL"; break; fi
+            if [ -n "$URL" ]; then echo "STREAM_URL=$URL" >> $GITHUB_ENV; break; fi
           done
       - name: Download mod
         run: |
